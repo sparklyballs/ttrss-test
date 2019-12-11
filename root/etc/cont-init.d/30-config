@@ -1,24 +1,27 @@
 #!/usr/bin/with-contenv bash
 
+# create our folders
+mkdir -p /config/links
+
 # create symlinks
 symlinks=( \
 /var/www/html/config.php \
-/var/www/html/themes.local \
-/var/www/html/plugins.local \
 /var/www/html/cache \
+/var/www/html/feed-icons \
 /var/www/html/lock \
-/var/www/html/feed-icons
+/var/www/html/plugins.local \
+/var/www/html/themes.local
 )
 
 for i in "${symlinks[@]}"; do
 	[[ "$(basename "$i")" == "config.php" && ! -L "$i" ]] && \
-		ln -s /config/"$(basename "$i")" "$i"
-	[[ -e "$i" && ! -L "$i" && -e /config/"$(basename "$i")" ]] && \
+		ln -s /config/links/"$(basename "$i")" "$i"
+	[[ -e "$i" && ! -L "$i" && -e /config/links/"$(basename "$i")" ]] && \
 		rm -Rf "$i" && \
-		ln -s /config/"$(basename "$i")" "$i"
+		ln -s /config/links/"$(basename "$i")" "$i"
 	[[ -e "$i" && ! -L "$i" ]] && \
-		mv "$i" /config/"$(basename "$i")" && \
-		ln -s /config/"$(basename "$i")" "$i"
+		mv "$i" /config/links/"$(basename "$i")" && \
+		ln -s /config/links/"$(basename "$i")" "$i"
 done
 
 # permissions
