@@ -1,4 +1,39 @@
-FROM lsiobase/nginx:3.10
+ARG ALPINE_VER="3.10"
+FROM alpine:${ALPINE_VER} as fetch-stage
+
+############## fetch stage ##############
+
+# install fetch packages
+RUN \
+	apk add --no-cache \
+		bash \
+		curl
+
+# set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# fetch version file
+RUN \
+	set -ex \
+	&& curl -o \
+	/tmp/version.txt -L \
+	"https://raw.githubusercontent.com/sparklyballs/versioning/master/version.txt"
+
+# fetch source code
+# hadolint ignore=SC1091
+RUN \
+	. /tmp/version.txt \
+	&& set -ex \
+	&& mkdir -p \
+		/var/www/html \
+	&& curl -o \
+	/tmp/ttrss.tar.gz -L \
+	"https://git.tt-rss.org/fox/tt-rss/archive/$TTRSS_RELEASE.tar.gz" \
+	&& tar xf \
+	/tmp/ttrss.tar.gz -C \
+	/var/www/html/ --strip-components=1
+
+FROM lsiobase/nginx:${ALPINE_VER}
 
 # set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -25,24 +60,14 @@ RUN \
 	php7-pgsql \
 	php7-posix \
 	tar && \
- echo "**** install software ****" && \
- mkdir -p \
-	/var/www/html/ && \
-	TT_RSS_VERSION=$(git ls-remote https://git.tt-rss.org/fox/tt-rss refs/heads/master \
-		| cut -c 1-7) && \
- set -ex && \
- curl -o \
-	/tmp/ttrss.tar.gz -L \
-	"https://git.tt-rss.org/fox/tt-rss/archive/$TT_RSS_VERSION.tar.gz" && \
- set +ex && \
- tar xf \
- /tmp/ttrss.tar.gz -C \
-	/var/www/html/ --strip-components=1 && \
  echo "**** link php7 to php ****" && \
  ln -sf /usr/bin/php7 /usr/bin/php && \
  echo "**** cleanup ****" && \
  rm -rf \
 	/tmp/*
+
+# add artifacts from fetch stage
+COPY --from=fetch-stage /var/www/html /var/www/html
 
 # copy local files
 COPY root/ /
