@@ -1,5 +1,8 @@
 FROM lsiobase/nginx:3.10
 
+# set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 RUN \
  echo "**** install packages ****" && \
  apk add --no-cache --upgrade \
