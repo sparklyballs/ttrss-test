@@ -1,1 +1,1 @@
-test version of tt-rss
+ test version of tt-rss
