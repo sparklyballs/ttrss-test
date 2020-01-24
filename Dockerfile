@@ -7,10 +7,14 @@ FROM alpine:${ALPINE_VER} as fetch-stage
 RUN \
 	apk add --no-cache \
 		bash \
-		curl
+		curl \
+		git
 
 # set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# set workdir
+WORKDIR /var/www/html
 
 # fetch version file
 RUN \
@@ -24,14 +28,8 @@ RUN \
 RUN \
 	. /tmp/version.txt \
 	&& set -ex \
-	&& mkdir -p \
-		/var/www/html \
-	&& curl -o \
-	/tmp/ttrss.tar.gz -L \
-	"https://git.tt-rss.org/fox/tt-rss/archive/$TTRSS_RELEASE.tar.gz" \
-	&& tar xf \
-	/tmp/ttrss.tar.gz -C \
-	/var/www/html/ --strip-components=1
+	&& git clone --tags --progress --depth=1 https://git.tt-rss.org/fox/tt-rss /var/www/html \
+	&& git checkout -b "$TTRSS_RELEASE" 
 
 FROM lsiobase/nginx:${ALPINE_VER}
 
