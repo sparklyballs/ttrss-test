@@ -1,4 +1,4 @@
-ARG ALPINE_VER="3.12"
+ARG ALPINE_VER="3.13"
 FROM alpine:${ALPINE_VER} as fetch-stage
 
 ############## fetch stage ##############
@@ -31,7 +31,7 @@ RUN \
 	&& git clone --tags --progress --depth=1 https://git.tt-rss.org/fox/tt-rss /var/www/html \
 	&& git checkout -b "$TTRSS_RELEASE" 
 
-FROM lsiobase/nginx:${ALPINE_VER}
+FROM ghcr.io/linuxserver/baseimage-alpine-nginx:${ALPINE_VER}
 
 # set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
